@@ -13,7 +13,11 @@ const ENV = 'development';
  * LOG_ENABLED: boolean,
  * OBP_CONSUMER_KEY: string,
  * OBP_DIRECT_LOGIN_PATH: string,
- * USERNAME_STORAGE_KEY: string
+ * USERNAME_STORAGE_KEY: string,
+ * APP_VERSION: string,
+ * APP_DEVELOPER: string,
+ * APP_STUDENT_ID: string,
+ * API_PROVIDER: string
  * }>}
  */
 export const APP_CONFIG = Object.freeze({
@@ -26,7 +30,11 @@ export const APP_CONFIG = Object.freeze({
     LOG_ENABLED: ENV === 'development',
     OBP_CONSUMER_KEY: 's5zjt0nw1gtbtizmy0ggu2kl4fjzp3xnpijseg1z',
     OBP_DIRECT_LOGIN_PATH: '/my/logins/direct',
-    USERNAME_STORAGE_KEY: 'obp_saved_username'
+    USERNAME_STORAGE_KEY: 'obp_saved_username',
+    APP_VERSION: '1.0.0',
+    APP_DEVELOPER: 'Rinold Sagayaraj',
+    APP_STUDENT_ID: '3079158',
+    API_PROVIDER: 'https://apisandbox.openbankproject.com'
 });
 
 /**

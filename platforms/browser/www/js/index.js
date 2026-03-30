@@ -1,4 +1,4 @@
-import { directLogin, getAccounts, getBanks, getTransactions } from './obp-api.js';
+import { directLogin, getAccounts, getTransactions, getUserBanks } from './obp-api.js';
 import { APP_CONFIG, injectCSP, logger } from './config.js';
 import {
     clearSession,
@@ -45,6 +45,12 @@ function logDebug(message, payload) {
 function init() {
     document.querySelector('#form-login').addEventListener('submit', onLoginSubmit);
     document.querySelector('#btn-logout').addEventListener('click', onLogout);
+    document.querySelector('#btn-to-about').addEventListener('click', function () {
+        showView('view-about');
+    });
+    document.querySelector('#btn-about-back').addEventListener('click', function () {
+        showView('view-security');
+    });
     document.querySelector('#btn-to-login').addEventListener('click', function () {
         showView('view-login');
     });
@@ -59,8 +65,26 @@ function init() {
     document.querySelector('#txn-date-from').addEventListener('change', applyTransactionFilters);
     document.querySelector('#txn-date-to').addEventListener('change', applyTransactionFilters);
 
+    populateAppMeta();
     updateSessionStatus();
     showView('view-login');
+}
+
+/**
+ * Renders app metadata in footer and About view.
+ * @returns {void}
+ */
+function populateAppMeta() {
+    const footerInfo = document.querySelector('#app-footer-info');
+    const aboutVersion = document.querySelector('#about-app-version');
+
+    if (footerInfo) {
+        footerInfo.textContent = 'App v' + APP_CONFIG.APP_VERSION;
+    }
+
+    if (aboutVersion) {
+        aboutVersion.textContent = APP_CONFIG.APP_VERSION;
+    }
 }
 
 /**
@@ -97,7 +121,7 @@ async function onLoginSubmit(event) {
  * @returns {Promise<void>} Async completion state.
  */
 async function loadBanks() {
-    const response = await getBanks();
+    const response = await getUserBanks();
     state.banks = response.banks || [];
 
     const container = document.querySelector('#banks-table-container');

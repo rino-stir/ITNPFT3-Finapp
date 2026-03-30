@@ -83,6 +83,30 @@ export function getBanks() {
 }
 
 /**
+ * Retrieves only banks associated with the signed-in user's accounts.
+ * @returns {Promise<{banks: Array<object>}>} User-scoped banks payload.
+ */
+export async function getUserBanks() {
+    const accountsResponse = await getAccounts();
+    const banksResponse = await getBanks();
+
+    const userBankIds = new Set(
+        (accountsResponse.accounts || [])
+            .map(function (account) {
+                return account.bank_id;
+            })
+            .filter(Boolean)
+    );
+
+    const userBanks = (banksResponse.banks || []).filter(function (bank) {
+        const bankId = bank.id || bank.bank_id;
+        return userBankIds.has(bankId);
+    });
+
+    return { banks: userBanks };
+}
+
+/**
  * Retrieves authenticated account list for active session.
  * @returns {Promise<{accounts: Array<object>}>} Accounts payload.
  */
@@ -104,7 +128,7 @@ export function getAccounts() {
  */
 export function getTransactions(bankId, accountId) {
     return requestJson(
-    OBP_API_BASE + '/my/banks/' + encodeURIComponent(bankId) + '/accounts/' + encodeURIComponent(accountId) + '/owner/transactions',
+    OBP_API_BASE + '/my/banks/' + encodeURIComponent(bankId) + '/accounts/' + encodeURIComponent(accountId) + '/transactions',
         {
             method: 'GET',
             headers: {

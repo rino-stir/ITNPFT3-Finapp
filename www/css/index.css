@@ -131,6 +131,12 @@ button.danger {
     padding-block: var(--space-4) var(--space-6);
 }
 
+.footer-note {
+    display: block;
+    margin-block-start: var(--space-2);
+    color: var(--color-text-soft);
+}
+
 @media (max-width: 48rem) {
     main {
         border-radius: var(--radius-sm);

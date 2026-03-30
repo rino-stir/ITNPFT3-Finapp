@@ -31,14 +31,17 @@ export function setStatus(selector, message) {
  */
 export function renderBanksTable(banks) {
     const rows = banks.map(function (bank) {
+        const bankId = bank.id || bank.bank_id || '';
+
         return '<tr>' +
-            '<td>' + escapeHtml(bank.id || bank.bank_id || '') + '</td>' +
+            '<td>' + escapeHtml(bankId) + '</td>' +
             '<td>' + escapeHtml(bank.full_name || '') + '</td>' +
-            '<td><button class="table-action" data-bank-id="' + escapeHtml(bank.id || bank.bank_id || '') + '">Select</button></td>' +
+            '<td>' + escapeHtml(bank.bank_code || '') + '</td>' +
+            '<td><button class="table-action" data-bank-id="' + escapeHtml(bankId) + '">Select</button></td>' +
             '</tr>';
     }).join('');
 
-    return '<table class="data-table"><thead><tr><th>Bank ID</th><th>Name</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    return '<table class="data-table"><thead><tr><th>Bank ID</th><th>Name</th><th>Short Name</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 /**

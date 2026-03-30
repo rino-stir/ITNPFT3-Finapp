@@ -81,15 +81,28 @@
         <section id="view-security" class="view" aria-labelledby="security-heading" hidden>
             <div class="view-header">
                 <h2 id="security-heading">Security &amp; Session</h2>
+                <button id="btn-to-about" type="button" class="secondary">About</button>
                 <button id="btn-logout" type="button" class="danger">Logout &amp; wipe session</button>
             </div>
             <p id="sec-session-info" role="status" aria-live="polite">Loading session status...</p>
             <p class="helper-text">Only an encrypted token and optional username are stored. Password is never persisted.</p>
         </section>
+
+        <section id="view-about" class="view" aria-labelledby="about-heading" hidden>
+            <div class="view-header">
+                <h2 id="about-heading">About</h2>
+                <button id="btn-about-back" type="button" class="secondary">Back</button>
+            </div>
+            <p><strong>Developer:</strong> Rinold Sagayaraj</p>
+            <p><strong>Student ID:</strong> 3079158</p>
+            <p><strong>API provider:</strong> <a href="https://apisandbox.openbankproject.com" target="_blank" rel="noopener noreferrer">https://apisandbox.openbankproject.com</a></p>
+            <p><strong>App version:</strong> <span id="about-app-version"></span></p>
+        </section>
     </main>
 
     <footer class="app-footer" role="contentinfo">
         <small id="global-session-status" aria-live="polite">Session: none</small>
+        <small id="app-footer-info" class="footer-note" aria-live="polite"></small>
     </footer>
 
     <script src="cordova.js"></script>
