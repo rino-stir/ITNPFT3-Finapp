@@ -1,84 +1,141 @@
-/* Design Tokens: typography, spacing, color, shape, shadow, and motion */
-:root {
-    /* Typography: fluid application scale capped for dense financial UI */
-    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem); /* 12px min - badge/label floor */
-    --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem); /* 14px - buttons, nav */
-    --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* 16px - body copy */
-    --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem); /* 18px - section headings */
-    --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem); /* 24px - page title max */
+/* =============================================================
+   UOS FinApp — Design Tokens
+   Nexus palette: warm beige surfaces, teal accent
+   Art direction: fintech dashboard → restrained, trustworthy,
+   dense spacing, two non-neutral hues max per viewport
+   ============================================================= */
 
-    /* 4px spacing scale */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-    --space-7: 28px;
-    --space-8: 32px;
-    --space-9: 36px;
-    --space-10: 40px;
-    --space-11: 44px;
-    --space-12: 48px;
-    --space-13: 52px;
-    --space-14: 56px;
-    --space-15: 60px;
-    --space-16: 64px;
-    --space-17: 68px;
-    --space-18: 72px;
-    --space-19: 76px;
-    --space-20: 80px;
-    --space-21: 84px;
-    --space-22: 88px;
-    --space-23: 92px;
-    --space-24: 96px;
+:root,
+[data-theme="light"] {
 
-    /* Financial color system: light mode */
-    --color-bg: #f7f6f2;
-    --color-surface: #f9f8f5;
-    --color-text-primary: #28251d;
-    --color-text-muted: #7a7974;
-    --color-primary: #01696f;
-    --color-on-primary: #f9f8f5;
-    --color-success: #1f7a3e;
-    --color-error: #6b1f2b;
-    --color-warning: #b36a00;
-    --color-border: color-mix(in srgb, var(--color-text-muted), var(--color-surface) 72%);
+  /* --- Typography ------------------------------------------ */
+  --font-display: 'General Sans', 'Helvetica Neue', sans-serif;
+  --font-body:    'Satoshi', 'Inter', sans-serif;
 
-    /* Shape and sizing tokens */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    --radius-full: 9999px;
-    --border-width-hairline: 0.0625rem;
+  /* Fluid type scale — never hardcode px */
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem); /* 12–14px */
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);     /* 14–16px */
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem); /* 16–18px */
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);   /* 18–24px */
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);  /* 24–36px — MAX for web app */
 
-    /* Warm neutral shadows using OKLCH alpha */
-    --shadow-sm: 0 0.0625rem 0.1875rem oklch(0.33 0.02 70 / 0.12);
-    --shadow-md: 0 0.25rem 0.75rem oklch(0.33 0.02 70 / 0.16);
-    --shadow-lg: 0 0.5rem 1.5rem oklch(0.33 0.02 70 / 0.22);
+  /* --- 4px Spacing system ---------------------------------- */
+  --space-1:  0.25rem;   /*  4px */
+  --space-2:  0.5rem;    /*  8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
 
-    /* Motion and typography families */
-    --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
-    --font-body: 'Satoshi', 'Inter', sans-serif;
-    --font-display: 'Satoshi', sans-serif;
+  /* --- Surfaces (Nexus Beige) ------------------------------ */
+  --color-bg:               #f7f6f2;
+  --color-surface:          #f9f8f5;
+  --color-surface-2:        #fbfbf9;
+  --color-surface-offset:   #f3f0ec;
+  --color-surface-offset-2: #edeae5;
+  --color-surface-dynamic:  #e6e4df;
+  --color-divider:          #dcd9d5;
+  --color-border:           #d4d1ca;
 
-    /* Content widths */
-    --content-narrow: 640px;
-    --content-default: 960px;
-    --content-wide: 1200px;
+  /* --- Text (Sylph Gray) ----------------------------------- */
+  --color-text:         #28251d;
+  --color-text-muted:   #7a7974;
+  --color-text-faint:   #bab9b4;
+  --color-text-inverse: #f9f8f4;
+
+  /* --- Primary Accent (Hydra Teal) — CTAs & links only ----- */
+  --color-primary:           #01696f;
+  --color-primary-hover:     #0c4e54;
+  --color-primary-active:    #0f3638;
+  --color-primary-highlight: #cedcd8;
+
+  /* --- Semantic states ------------------------------------- */
+  --color-success:           #437a22;
+  --color-success-highlight: #d4dfcc;
+  --color-error:             #a12c7b;
+  --color-error-hover:       #7d1e5e;
+  --color-error-highlight:   #e0ced7;
+  --color-warning:           #964219;
+  --color-warning-highlight: #ddcfc6;
+
+  /* --- Radius tokens --------------------------------------- */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-full: 9999px;
+
+  /* --- Transitions ----------------------------------------- */
+  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- Shadows (warm-tinted, not pure black) --------------- */
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 80 / 0.12);
+
+  /* --- Layout widths --------------------------------------- */
+  --content-narrow:  640px;
+  --content-default: 960px;
+  --content-wide:    1200px;
 }
 
-/* Financial color system: dark mode */
+/* ----------------------------------------------------------------
+   DARK MODE — all semantic tokens re-mapped for dark surfaces
+   ---------------------------------------------------------------- */
 [data-theme="dark"] {
-    --color-bg: #171614;
-    --color-surface: #201f1c;
-    --color-text-primary: #cdccca;
-    --color-text-muted: #a19f99;
-    --color-primary: #4f98a3;
-    --color-on-primary: #171614;
-    --color-success: #43ad66;
-    --color-error: #b76b76;
-    --color-warning: #d49d4f;
-    --color-border: color-mix(in srgb, var(--color-text-muted), var(--color-surface) 74%);
+  --color-bg:               #171614;
+  --color-surface:          #1c1b19;
+  --color-surface-2:        #201f1d;
+  --color-surface-offset:   #1d1c1a;
+  --color-surface-offset-2: #22211f;
+  --color-surface-dynamic:  #2d2c2a;
+  --color-divider:          #262523;
+  --color-border:           #393836;
+  --color-text:             #cdccca;
+  --color-text-muted:       #797876;
+  --color-text-faint:       #5a5957;
+  --color-text-inverse:     #2b2a28;
+  --color-primary:          #4f98a3;
+  --color-primary-hover:    #227f8b;
+  --color-primary-active:   #1a626b;
+  --color-primary-highlight:#313b3b;
+  --color-success:          #6daa45;
+  --color-success-highlight:#3a4435;
+  --color-error:            #d163a7;
+  --color-error-hover:      #b9478f;
+  --color-error-highlight:  #4c3d46;
+  --color-warning:          #bb653b;
+  --color-warning-highlight:#564942;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.4);
+}
+
+/* System preference fallback (no manual toggle yet) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg:               #171614;
+    --color-surface:          #1c1b19;
+    --color-surface-2:        #201f1d;
+    --color-surface-offset:   #1d1c1a;
+    --color-surface-dynamic:  #2d2c2a;
+    --color-divider:          #262523;
+    --color-border:           #393836;
+    --color-text:             #cdccca;
+    --color-text-muted:       #797876;
+    --color-text-faint:       #5a5957;
+    --color-text-inverse:     #2b2a28;
+    --color-primary:          #4f98a3;
+    --color-primary-hover:    #227f8b;
+    --color-primary-highlight:#313b3b;
+    --color-error:            #d163a7;
+    --color-error-highlight:  #4c3d46;
+    --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+    --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+    --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.4);
+  }
 }

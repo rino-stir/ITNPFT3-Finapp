@@ -1,3 +1,5 @@
+'use strict';
+
 const ENV = 'development';
 
 /**
@@ -11,6 +13,7 @@ const ENV = 'development';
  * SESSION_BANK_KEY: string,
  * SESSION_ACCOUNT_KEY: string,
  * LOG_ENABLED: boolean,
+ * CONSUMER_KEY: string,
  * OBP_CONSUMER_KEY: string,
  * OBP_DIRECT_LOGIN_PATH: string,
  * USERNAME_STORAGE_KEY: string,
@@ -20,7 +23,7 @@ const ENV = 'development';
  * API_PROVIDER: string
  * }>}
  */
-export const APP_CONFIG = Object.freeze({
+const APP_CONFIG = Object.freeze({
     ENV: ENV,
     OBP_BASE_URL: 'https://apisandbox.openbankproject.com',
     OBP_API_VERSION: 'v6.0.0',
@@ -28,6 +31,7 @@ export const APP_CONFIG = Object.freeze({
     SESSION_BANK_KEY: 'obp_bank',
     SESSION_ACCOUNT_KEY: 'obp_account',
     LOG_ENABLED: ENV === 'development',
+    CONSUMER_KEY: 's5zjt0nw1gtbtizmy0ggu2kl4fjzp3xnpijseg1z',
     OBP_CONSUMER_KEY: 's5zjt0nw1gtbtizmy0ggu2kl4fjzp3xnpijseg1z',
     OBP_DIRECT_LOGIN_PATH: '/my/logins/direct',
     USERNAME_STORAGE_KEY: 'obp_saved_username',
@@ -37,25 +41,25 @@ export const APP_CONFIG = Object.freeze({
     API_PROVIDER: 'https://apisandbox.openbankproject.com'
 });
 
+window.APP_CONFIG = APP_CONFIG;
+
 /**
  * Builds Content Security Policy based on environment.
  * @returns {string} CSP string for current environment.
  */
 function buildCspValue() {
-    // SECURITY NOTE: DEV mode intentionally uses unsafe-inline for ease of local file:// testing.
-    // Development CSP is relaxed for iteration speed, production CSP is strict by default-deny.
-    if (APP_CONFIG.ENV === 'development') {
-        return "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://api.fontshare.com https://fonts.gstatic.com; connect-src 'self' https://apisandbox.openbankproject.com; img-src 'self' data:;";
-    }
+    // if (APP_CONFIG.ENV === 'development') {
+    //     return "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://api.fontshare.com https://fonts.gstatic.com; connect-src 'self' https://apisandbox.openbankproject.com; img-src 'self' data:;";
+    // }
 
-    return "default-src 'none'; script-src 'self'; style-src 'self' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://api.fontshare.com https://fonts.gstatic.com; connect-src https://apisandbox.openbankproject.com; img-src 'self'; form-action 'self'; base-uri 'self';";
+    // return "default-src 'none'; script-src 'self'; style-src 'self' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://api.fontshare.com https://fonts.gstatic.com; connect-src https://apisandbox.openbankproject.com; img-src 'self'; form-action 'self'; base-uri 'self';";
 }
 
 /**
  * Injects environment-specific CSP meta tag into document head.
  * @returns {void}
  */
-export function injectCSP() {
+function injectCSP() {
     const existingMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
     if (existingMeta) {
         existingMeta.remove();
@@ -71,7 +75,7 @@ export function injectCSP() {
  * Environment-aware logger that suppresses output in production.
  * @type {{log: (...args: unknown[]) => void, warn: (...args: unknown[]) => void, error: (...args: unknown[]) => void}}
  */
-export const logger = {
+const logger = {
     /**
      * Writes development log output with OBP prefix.
      * @param {...unknown} args Values to print.
@@ -105,3 +109,6 @@ export const logger = {
         }
     }
 };
+
+window.injectCSP = injectCSP;
+window.logger = logger;
