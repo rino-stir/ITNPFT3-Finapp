@@ -43,7 +43,7 @@
     --color-success: #1f7a3e;
     --color-error: #6b1f2b;
     --color-warning: #b36a00;
-    --color-border: color-mix(in srgb, var(--color-text-muted), var(--color-surface) 72%);
+    --color-border: oklch(from var(--color-text-primary) l c h / 0.08);
 
     /* Shape and sizing tokens */
     --radius-sm: 6px;
@@ -80,5 +80,5 @@
     --color-success: #43ad66;
     --color-error: #b76b76;
     --color-warning: #d49d4f;
-    --color-border: color-mix(in srgb, var(--color-text-muted), var(--color-surface) 74%);
+    --color-border: oklch(from var(--color-text-primary) l c h / 0.08);
 }

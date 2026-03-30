@@ -14,8 +14,18 @@
     <a class="skip-link" href="#view-login">Skip to main content</a>
 
     <header class="app-header" role="banner">
-        <h1>OBP Secure Banking</h1>
-        <p class="subtitle">Direct Login sandbox client</p>
+        <div class="header-title">
+            <h1>OBP Secure Banking</h1>
+            <p class="subtitle">Direct Login sandbox client</p>
+        </div>
+        <nav class="header-controls" aria-label="Application controls">
+            <button id="btn-theme-toggle" type="button" class="theme-toggle" aria-label="Toggle light and dark mode">Theme</button>
+            <div id="user-chip" class="user-chip" hidden>
+                <span id="user-chip-initials" class="user-chip-initials" aria-hidden="true">--</span>
+                <span id="user-chip-name" class="user-chip-name"></span>
+            </div>
+            <button id="btn-signout" type="button" class="btn-danger" hidden>Sign Out</button>
+        </nav>
     </header>
 
     <main id="app-root" tabindex="-1">
@@ -34,9 +44,10 @@
                     <input id="chk-remember" name="remember" type="checkbox" aria-label="Remember username">
                     <label for="chk-remember">Remember username on this device (encrypted)</label>
                 </div>
-                <button id="btn-login" type="submit">Sign in securely</button>
+                <button id="btn-login" type="submit" aria-busy="false">Sign in securely</button>
             </form>
             <p id="login-status" class="status-line" role="status" aria-live="polite"></p>
+            <p id="login-error" class="status-line" role="alert" aria-live="assertive" hidden></p>
             <p class="helper-text">Credentials are transmitted over TLS. Token stored in session storage only.</p>
         </section>
 
@@ -47,6 +58,11 @@
             </div>
             <label for="bank-search">Filter by name or ID</label>
             <input id="bank-search" type="search" aria-label="Filter banks">
+            <div id="banks-skeleton" class="skeleton-list" role="status" aria-live="polite" aria-label="Loading banks" hidden>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+            </div>
             <div id="banks-table-container" role="region" aria-live="polite" aria-label="Banks list"></div>
             <p id="banks-status" class="status-line" role="status" aria-live="polite"></p>
         </section>
@@ -55,6 +71,11 @@
             <div class="view-header">
                 <h2 id="accounts-heading">Accounts</h2>
                 <button id="btn-to-banks" type="button" class="secondary">Back</button>
+            </div>
+            <div id="accounts-skeleton" class="skeleton-list" role="status" aria-live="polite" aria-label="Loading accounts" hidden>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
             </div>
             <div id="accounts-table-container" role="region" aria-live="polite" aria-label="Accounts list"></div>
             <p id="accounts-status" class="status-line" role="status" aria-live="polite"></p>
@@ -74,6 +95,11 @@
                 <label for="txn-date-to">To date</label>
                 <input id="txn-date-to" type="date" aria-label="To date">
             </fieldset>
+            <div id="transactions-skeleton" class="skeleton-list" role="status" aria-live="polite" aria-label="Loading transactions" hidden>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+                <div class="skeleton skeleton-row" aria-hidden="true"></div>
+            </div>
             <div id="transactions-list-container" role="region" aria-live="polite" aria-label="Transactions table"></div>
             <p id="transactions-status" class="status-line" role="status" aria-live="polite"></p>
         </section>
@@ -82,7 +108,6 @@
             <div class="view-header">
                 <h2 id="security-heading">Security &amp; Session</h2>
                 <button id="btn-to-about" type="button" class="secondary">About</button>
-                <button id="btn-logout" type="button" class="danger">Logout &amp; wipe session</button>
             </div>
             <p id="sec-session-info" role="status" aria-live="polite">Loading session status...</p>
             <p class="helper-text">Only an encrypted token and optional username are stored. Password is never persisted.</p>

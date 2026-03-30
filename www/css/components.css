@@ -19,7 +19,7 @@
     align-self: start;
     min-height: 100dvh;
     background: var(--color-surface);
-    border-inline-end: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 26%, transparent);
+    border-inline-end: var(--border-width-hairline) solid var(--color-border);
 }
 
 .main-content {
@@ -158,7 +158,7 @@ input[type='text'],
 input[type='password'] {
     width: 100%;
     padding: var(--space-2) var(--space-3);
-    border: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 30%, transparent);
+    border: var(--border-width-hairline) solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
     color: var(--color-text-primary);
@@ -196,15 +196,17 @@ input[type='password']:focus-visible {
 /* === CARDS === */
 .card {
     background: var(--color-surface);
-    border: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 24%, transparent);
+    border: var(--border-width-hairline) solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     padding: var(--space-4);
-    transition: box-shadow var(--transition-interactive);
+    transition: box-shadow var(--transition-interactive),
+        transform var(--transition-interactive);
 }
 
 .card:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .card-title {
@@ -229,14 +231,14 @@ input[type='password']:focus-visible {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
-    border-bottom: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 30%, transparent);
+    border-bottom: var(--border-width-hairline) solid var(--color-border);
     padding: var(--space-2) var(--space-3);
 }
 
 .data-table td {
     font-size: var(--text-sm);
     padding: var(--space-2) var(--space-3);
-    border-bottom: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 24%, transparent);
+    border-bottom: var(--border-width-hairline) solid var(--color-border);
 }
 
 .data-table td.amount {
@@ -277,6 +279,11 @@ input[type='password']:focus-visible {
     color: var(--color-success);
 }
 
+.badge-neutral {
+    background: color-mix(in oklch, var(--color-text-muted) 14%, transparent);
+    color: var(--color-text-muted);
+}
+
 .badge-error {
     background: color-mix(in oklch, var(--color-error) 14%, transparent);
     color: var(--color-error);
@@ -303,6 +310,12 @@ input[type='password']:focus-visible {
     );
     background-size: 200% 100%;
     animation: shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
+    }
 }
 
 .skeleton-text {
@@ -373,7 +386,7 @@ input[type='password']:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 30%, transparent);
+    border: var(--border-width-hairline) solid var(--color-border);
     border-radius: var(--radius-full);
     background: var(--color-surface);
     color: var(--color-primary);
@@ -397,6 +410,6 @@ input[type='password']:focus-visible {
         position: static;
         min-height: auto;
         border-inline-end: none;
-        border-bottom: var(--border-width-hairline) solid color-mix(in oklch, var(--color-text-muted) 26%, transparent);
+        border-bottom: var(--border-width-hairline) solid var(--color-border);
     }
 }

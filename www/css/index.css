@@ -25,7 +25,49 @@ main {
 }
 
 .app-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
     padding-block: var(--space-6) var(--space-4);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.header-title {
+    min-width: 0;
+}
+
+.user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--space-10);
+    padding: var(--space-2) var(--space-3);
+    border: var(--border-width-hairline) solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+}
+
+.user-chip-initials {
+    width: var(--space-6);
+    height: var(--space-6);
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background: color-mix(in oklch, var(--color-primary) 18%, transparent);
+    color: var(--color-primary);
+}
+
+.user-chip-name {
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
 }
 
 .subtitle,
@@ -43,6 +85,22 @@ main {
 
 .view[hidden] {
     display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(var(--space-2));
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.view-enter {
+    animation: fadeIn var(--transition-interactive) both;
 }
 
 .view-header {
@@ -92,6 +150,7 @@ button {
     color: var(--color-on-primary);
     border-radius: var(--radius-sm);
     padding: var(--space-3) var(--space-4);
+    min-height: var(--space-10);
     cursor: pointer;
 }
 
@@ -100,7 +159,7 @@ button.secondary {
     color: var(--color-primary);
 }
 
-button.danger {
+button.btn-danger {
     border-color: var(--color-error);
     background: var(--color-error);
 }
@@ -108,6 +167,10 @@ button.danger {
 .status-line {
     min-height: 1.5em;
     margin-block-start: var(--space-3);
+}
+
+#login-error {
+    color: var(--color-error);
 }
 
 .data-table {
@@ -121,6 +184,12 @@ button.danger {
     text-align: left;
     padding: var(--space-3);
     border-block-end: var(--border-width-hairline) solid var(--color-border);
+}
+
+.skeleton-list {
+    display: grid;
+    gap: var(--space-2);
+    margin-block-start: var(--space-4);
 }
 
 .table-action {
@@ -138,6 +207,15 @@ button.danger {
 }
 
 @media (max-width: 48rem) {
+    .app-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-controls {
+        flex-wrap: wrap;
+    }
+
     main {
         border-radius: var(--radius-sm);
         padding: var(--space-4);
