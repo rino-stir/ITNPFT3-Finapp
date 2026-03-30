@@ -16,33 +16,17 @@
     inset-block-start: var(--space-3);
 }
 
-.app-header,
-.app-footer,
-main {
-    max-width: var(--content-default);
-    margin-inline: auto;
-    padding-inline: var(--space-4);
-}
-
-.app-header {
-    padding-block: var(--space-6) var(--space-4);
-}
-
 .subtitle,
 .helper-text {
     color: var(--color-text-muted);
 }
 
-main {
-    background: var(--color-surface);
-    border: var(--border-width-hairline) solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    padding: var(--space-6);
-}
-
 .view[hidden] {
     display: none;
+}
+
+.view.is-active {
+    display: flex;
 }
 
 .view-header {
@@ -127,8 +111,58 @@ button.danger {
     width: auto;
 }
 
-.app-footer {
-    padding-block: var(--space-4) var(--space-6);
+/* ── Footer Content ────────────────────────────────────────── */
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    max-width: var(--content-default);
+    margin-inline: auto;
+    width: 100%;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.footer-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--color-text);
+}
+
+.session-timer {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.footer-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+}
+
+.footer-meta {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.4;
 }
 
 .footer-note {
@@ -137,14 +171,54 @@ button.danger {
     color: var(--color-text-soft);
 }
 
-@media (max-width: 48rem) {
-    main {
-        border-radius: var(--radius-sm);
-        padding: var(--space-4);
+/* ── Hide Footer on Login View ────────────────────────────── */
+
+.login-view ~ .app-footer {
+    display: none;
+}
+
+/* ── Hide User Menu on Login View ─────────────────────────– */
+
+.login-view ~ .user-menu-panel {
+    display: none;
+}
+
+/* ── Responsive Adjustments ────────────────────────────────– */
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        gap: var(--space-3);
     }
 
+    .footer-divider {
+        width: 100%;
+        height: 1px;
+    }
+
+    .user-menu-toggle {
+        padding: var(--space-2) var(--space-2);
+    }
+
+    .user-name-display {
+        display: none;
+    }
+}
+
+@media (max-width: 48rem) {
     .view-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: var(--space-2);
+        font-size: var(--text-xs);
+    }
+
+    .session-info,
+    .footer-meta {
+        font-size: var(--text-xs);
     }
 }

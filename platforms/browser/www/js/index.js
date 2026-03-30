@@ -24,6 +24,10 @@ const state = {
   allAccounts:     [],    // cached after first fetch
 };
 
+// Session timer state
+let sessionTimerInterval = null;
+let sessionEndTime = null;
+
 /* ── DOM refs ───────────────────────────────────────────────── */
 const formLogin   = document.getElementById('form-login');
 const btnLogin    = document.getElementById('btn-login');
@@ -38,6 +42,24 @@ const bcBanks     = document.getElementById('bc-banks');
 const bcBanks2    = document.getElementById('bc-banks-2');
 const bcAccounts  = document.getElementById('bc-accounts');
 
+// Normalizes bank identifiers across OBP payload variants.
+function normalizeBankId(source) {
+  if (source == null) return '';
+
+  if (typeof source === 'string' || typeof source === 'number') {
+    return String(source);
+  }
+
+  if (typeof source === 'object') {
+    if (source.id != null) return String(source.id);
+    if (source.bank_id != null) return normalizeBankId(source.bank_id);
+    if (source.bankId != null) return String(source.bankId);
+    if (source.value != null) return String(source.value);
+  }
+
+  return '';
+}
+
 /* ── Auth guard ─────────────────────────────────────────────── */
 // Called at startup — if a stale session exists from a prior
 // page load (e.g. bfcache), it is invalidated and login shown.
@@ -50,7 +72,108 @@ function enforceAuthGuard() {
   hideUserChip();
 }
 
-/* ── Login form ─────────────────────────────────────────────── */
+/* ── Session Timer ──────────────────────────────────────────– */
+// Session countdown timer (MM:SS format)
+// Auto-logout when timer reaches 0:00
+
+function startSessionTimer(durationSeconds = 1800) {
+  // Default: 30 minutes (1800 seconds)
+  stopSessionTimer(); // clear any existing timer
+  
+  sessionEndTime = Date.now() + (durationSeconds * 1000);
+  
+  sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+  updateSessionTimer(); // Immediate initial update
+}
+
+function updateSessionTimer() {
+  if (!sessionEndTime) return;
+  
+  const now = Date.now();
+  const remaining = Math.max(0, sessionEndTime - now);
+  const minutes = Math.floor(remaining / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  
+  const timerEl = document.getElementById('session-timer');
+  if (timerEl) {
+    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  
+  // Auto-logout when timer reaches 0:00
+  if (remaining === 0) {
+    clearInterval(sessionTimerInterval);
+    setLoginError('Your session has expired. Please sign in again.');
+    handleSessionExpired();
+  }
+}
+
+function stopSessionTimer() {
+  if (sessionTimerInterval) {
+    clearInterval(sessionTimerInterval);
+    sessionTimerInterval = null;
+    sessionEndTime = null;
+  }
+  
+  const timerEl = document.getElementById('session-timer');
+  if (timerEl) timerEl.textContent = '00:00';
+}
+
+function handleSessionExpired() {
+  clearSession();
+  resetUserDisplay();
+  showView('view-login');
+  
+  // Close user menu if open
+  const panel = document.getElementById('user-menu-panel');
+  if (panel) panel.classList.remove('is-open');
+}
+
+/* ── User Menu Interactions ────────────────────────────────– */
+// Side-sliding user menu panel
+
+function setupUserMenuInteractions() {
+  const trigger = document.getElementById('user-menu-trigger');
+  const panel = document.getElementById('user-menu-panel');
+  const closeBtn = document.getElementById('user-menu-close');
+  const logoutBtn = document.getElementById('user-menu-logout');
+  
+  // Toggle menu on trigger click
+  if (trigger) {
+    trigger.addEventListener('click', () => {
+      if (panel) {
+        panel.classList.toggle('is-open');
+        trigger.setAttribute('aria-expanded', 
+          panel.classList.contains('is-open') ? 'true' : 'false');
+      }
+    });
+  }
+  
+  // Close menu on close button click
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (panel) panel.classList.remove('is-open');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+  
+  // Logout from menu
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      handleSignOut();
+      if (panel) panel.classList.remove('is-open');
+    });
+  }
+  
+  // Close menu on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel && panel.classList.contains('is-open')) {
+      panel.classList.remove('is-open');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+/* ── App Initialization ────────────────────────────────────– */
 
 function validateLoginForm() {
   let valid = true;
@@ -109,7 +232,10 @@ async function handleLogin(e) {
 
   // Persist token for this session
   storeSession(token, username);
-  showUserChip(username);
+  populateUserDisplay({ display_name: username });
+  
+  // Start 30-minute session timer
+  startSessionTimer(1800);
 
   // Clear username field (leave no trace in DOM beyond chip)
   inpUsername.value = '';
@@ -150,7 +276,7 @@ async function loadBanks() {
 
 function handleBankSelect(bank) {
   state.selectedBank = bank;
-  const selectedBankId = bank?.id || bank?.bank_id || '';
+  const selectedBankId = normalizeBankId(bank);
 
   // Update breadcrumb label
   const bcName = document.getElementById('bc-bank-name');
@@ -190,7 +316,8 @@ async function loadAccounts(bankId) {
   state.allAccounts = accounts || [];
 
   // Filter to this bank only
-  const bankAccounts = state.allAccounts.filter(a => String(a.bank_id || '') === String(bankId || ''));
+  const targetBankId = normalizeBankId(bankId);
+  const bankAccounts = state.allAccounts.filter(a => normalizeBankId(a?.bank_id) === targetBankId);
   renderAccounts(bankAccounts, handleAccountSelect);
 }
 
@@ -200,15 +327,13 @@ function handleAccountSelect(account) {
   state.selectedAccount = account;
   const selectedAccountId = account?.id || account?.account_id || '';
   const selectedBankId =
-    state.selectedBank?.id || state.selectedBank?.bank_id || account?.bank_id || '';
+    normalizeBankId(state.selectedBank) || normalizeBankId(account?.bank_id);
 
-  // Update breadcrumb
+  // Update breadcrumb - account name in transactions view
   const bcAccName = document.getElementById('bc-account-name');
   if (bcAccName) bcAccName.textContent = account.label || selectedAccountId || 'Account';
 
-  const bcAccBank = document.getElementById('bc-accounts');
-  if (bcAccBank) bcAccBank.textContent = state.selectedBank?.short_name || 'Bank';
-
+  // Update transactions label
   const label = document.getElementById('transactions-account-label');
   if (label) label.textContent = `Transactions for ${account.label || selectedAccountId}.`;
 
@@ -244,7 +369,12 @@ async function loadTransactions(bankId, accountId) {
     return;
   }
 
-  renderTransactions(transactions);
+  // Store transactions for filtering and reset filters
+  allTransactions = transactions || [];
+  resetTransactionFilters();
+  
+  // Setup filter event listeners (one-time on first load to transactions view)
+  setupTransactionFilters();
 }
 
 /* ── Sign out ───────────────────────────────────────────────── */
@@ -252,13 +382,20 @@ async function loadTransactions(bankId, accountId) {
 // so re-entering the login view never shows a stale session.
 
 function handleSignOut() {
-  clearSession();       // wipe token + username from sessionStorage
-  hideUserChip();       // remove chip + sign-out button from header
+  stopSessionTimer();    // stop the countdown timer
+  clearSession();        // wipe token + username from sessionStorage
+  resetUserDisplay();    // remove user info from header + menu + footer
+  
   state.selectedBank    = null;
   state.selectedAccount = null;
   state.allAccounts     = [];
 
   setLoginError(null);  // clear any lingering error
+  
+  // Close user menu if open
+  const panel = document.getElementById('user-menu-panel');
+  if (panel) panel.classList.remove('is-open');
+  
   showView('view-login');
 }
 
@@ -272,10 +409,13 @@ function handleBackToBanks() {
 }
 
 function handleBackToAccounts() {
-  if (state.selectedBank) {
-    loadAccounts(state.selectedBank.id);
+  const selectedBankId =
+    normalizeBankId(state.selectedBank) || normalizeBankId(state.selectedAccount?.bank_id);
+
+  if (selectedBankId) {
+    loadAccounts(selectedBankId);
   } else {
-    showView('view-accounts');
+    showView('view-banks');
   }
 }
 
@@ -285,14 +425,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auth guard: always start at login, clear any stale session
   enforceAuthGuard();
 
+  // Setup user menu interactions
+  setupUserMenuInteractions();
+
   // Login form submit
   if (formLogin) {
     formLogin.addEventListener('submit', handleLogin);
-  }
-
-  // Sign out
-  if (btnSignout) {
-    btnSignout.addEventListener('click', handleSignOut);
   }
 
   // Breadcrumbs

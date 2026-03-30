@@ -51,10 +51,11 @@
     <span class="loading-overlay__label" id="loading-label">Loading…</span>
   </div>
 
-  <!-- ── App Shell ──────────────────────────────────────────── -->
-  <div class="app-shell">
+  <!-- ── App Container ─────────────────────────────────────── -->
+  <!-- Professional layout: header (sticky top) + main (flex 1) + footer (sticky bottom) -->
+  <div class="app-container">
 
-    <!-- Header: always visible -->
+    <!-- Header: sticky at top, z-100 -->
     <header class="app-header" role="banner">
       <!-- Brand -->
       <div class="app-header__brand" aria-label="UOS FinApp home">
@@ -74,17 +75,12 @@
 
       <!-- Right controls -->
       <div class="app-header__controls">
-        <!-- User chip: hidden until login; populated via JS -->
-        <div class="user-chip hidden" id="user-chip" role="status" aria-label="Signed-in user">
-          <div class="user-chip__avatar" id="user-avatar" aria-hidden="true">U</div>
-          <span id="user-name">User</span>
-        </div>
-
-        <!-- Sign out: hidden until login -->
-        <button class="btn btn-danger hidden" id="btn-signout"
-                aria-label="Sign out of UOS FinApp">
-          <i data-lucide="log-out" aria-hidden="true"></i>
-          Sign out
+        <!-- User menu trigger button (replaces direct sign-out) -->
+        <!-- Shown after login, hidden initially -->
+        <button class="user-menu-toggle hidden" id="user-menu-trigger"
+                aria-label="Open user menu" aria-expanded="false">
+          <div class="user-avatar-small" id="user-avatar-small" aria-hidden="true">U</div>
+          <span class="user-name-display" id="user-name-display">User</span>
         </button>
 
         <!-- Dark/light mode toggle -->
@@ -96,7 +92,36 @@
       </div>
     </header>
 
+    <!-- ── User Menu Panel (Side Slide-Out) ──────────────── -->
+    <!-- Fixed position, slides in from left on authenticated views -->
+    <aside class="user-menu-panel" id="user-menu-panel" role="navigation" aria-label="User menu">
+      <div class="user-menu-header">
+        <h2 class="user-menu-title">Account</h2>
+        <button class="user-menu-close" id="user-menu-close" aria-label="Close user menu">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="user-menu-content">
+        <!-- User profile card -->
+        <div class="user-profile-card">
+          <div class="user-avatar-large" id="user-avatar-large" aria-hidden="true">U</div>
+          <p class="user-profile-name" id="user-profile-name" style="margin-top: var(--space-3);">User</p>
+          <p class="user-profile-email" id="user-profile-email" style="margin-top: var(--space-1);">—</p>
+        </div>
+
+        <!-- Menu actions -->
+        <nav class="user-menu-actions">
+          <button class="user-menu-item" id="user-menu-logout" aria-label="Sign out of UOS FinApp">
+            <i data-lucide="log-out" aria-hidden="true"></i>
+            <span>Sign out</span>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
     <!-- ── Main content area ──────────────────────────────── -->
+    <!-- Flex 1 to fill space between header and footer; scrolls independently -->
     <main class="app-main" id="main-content">
       <div class="container">
 
@@ -106,9 +131,9 @@
 
           <div class="login-card">
             <div class="login-card__header">
-              <h1 class="login-card__title" id="login-title">Welcome back</h1>
+              <h1 class="login-card__title" id="login-title">UOS FinApp</h1>
               <p class="login-card__subtitle">
-                Sign in to access your accounts via Open Banking.
+                Sign in to access your bank accounts.
               </p>
             </div>
 
@@ -227,7 +252,10 @@
           <!-- Breadcrumb -->
           <nav class="breadcrumb" aria-label="Navigation path">
             <button class="breadcrumb__link" id="bc-banks"
-                    aria-label="Go back to banks list">Your Banks</button>
+                    aria-label="Go back to banks list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Your Banks</span>
+            </button>
             <span class="breadcrumb__sep" aria-hidden="true">›</span>
             <span class="breadcrumb__current" id="bc-bank-name">Bank</span>
           </nav>
@@ -272,10 +300,16 @@
           <!-- Breadcrumb -->
           <nav class="breadcrumb" aria-label="Navigation path">
             <button class="breadcrumb__link" id="bc-banks-2"
-                    aria-label="Go back to banks list">Your Banks</button>
+                    aria-label="Go back to banks list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Your Banks</span>
+            </button>
             <span class="breadcrumb__sep" aria-hidden="true">›</span>
             <button class="breadcrumb__link" id="bc-accounts"
-                    aria-label="Go back to accounts list" id="bc-account-bank">Bank</button>
+                    aria-label="Go back to accounts list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Accounts</span>
+            </button>
             <span class="breadcrumb__sep" aria-hidden="true">›</span>
             <span class="breadcrumb__current" id="bc-account-name">Account</span>
           </nav>
@@ -286,6 +320,88 @@
               <p class="section-subtitle" id="transactions-account-label">
                 Last 50 transactions.
               </p>
+            </div>
+          </div>
+
+          <!-- Transaction Filters -->
+          <div class="transaction-filters" id="transaction-filters">
+            <!-- Quick Filter Bar -->
+            <div class="filter-section filter-quick">
+              <fieldset class="filter-group">
+                <div class="filter-header">
+                  <h3 class="filter-title">Quick Filter</h3>
+                  <div class="filter-header-actions">
+                    <!-- Reset button (shows only when filters applied) -->
+                    <button class="filter-reset-btn hidden" id="filter-reset" type="button" 
+                            aria-label="Clear all filters">
+                      <i data-lucide="x" aria-hidden="true"></i>
+                      <span>Reset</span>
+                    </button>
+                    <!-- Advanced toggle -->
+                    <button class="filter-toggle" id="filter-toggle-advanced" 
+                            type="button" aria-label="Toggle advanced filters"
+                            aria-expanded="false" aria-controls="filter-advanced-section">
+                      <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+                      <span>Advanced</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="filter-row-quick">
+                  <!-- Type filter -->
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-type">Type</label>
+                    <select class="filter-select" id="filter-type" aria-label="Filter by transaction type">
+                      <option value="all">All Types</option>
+                      <option value="DEBIT">Debits</option>
+                      <option value="CREDIT">Credits</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            <!-- Advanced Filter Section (Collapsible) -->
+            <div class="filter-section filter-advanced hidden" id="filter-advanced-section">
+              <fieldset class="filter-group">
+                <legend class="filter-legend">Advanced Filters</legend>
+
+                <!-- Amount Range Row -->
+                <div class="filter-row">
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-amount-min">Min Amount</label>
+                    <input class="filter-input" type="number" id="filter-amount-min" 
+                           placeholder="0" min="0" step="0.01" aria-label="Minimum transaction amount">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-amount-max">Max Amount</label>
+                    <input class="filter-input" type="number" id="filter-amount-max" 
+                           placeholder="∞" min="0" step="0.01" aria-label="Maximum transaction amount">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-search">Search Description</label>
+                    <input class="filter-input" type="text" id="filter-search" 
+                           placeholder="Search..." aria-label="Search transaction description">
+                  </div>
+                </div>
+
+                <!-- Date Range Row -->
+                <div class="filter-row">
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-date-from">From Date</label>
+                    <input class="filter-input" type="date" id="filter-date-from" 
+                           aria-label="Transaction from date">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-date-to">To Date</label>
+                    <input class="filter-input" type="date" id="filter-date-to" 
+                           aria-label="Transaction to date">
+                  </div>
+                </div>
+              </fieldset>
             </div>
           </div>
 
@@ -327,7 +443,35 @@
       </div><!-- /.container -->
     </main>
 
-  </div><!-- /.app-shell -->
+    <!-- ── Footer (Sticky Bottom) ────────────────────────── -->
+    <!-- Session info + countdown timer + API version credits -->
+    <!-- Hidden on login view, visible on authenticated views -->
+    <footer class="app-footer" id="app-footer" role="contentinfo">
+      <div class="footer-content">
+        <!-- Session info section -->
+        <div class="footer-section">
+          <p class="footer-label">Session Info</p>
+          <div class="session-info">
+            <span id="session-user">Logged in as: —</span>
+            <span id="session-timer" class="session-timer" aria-label="Session timeout countdown">00:00</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="footer-divider"></div>
+
+        <!-- API/App version section -->
+        <div class="footer-section">
+          <p class="footer-label">About</p>
+          <p class="footer-meta">
+            OBP API v<span id="footer-api-version">6.0.0</span> | 
+            UOS FinApp v<span id="footer-app-version">1.0</span>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /.app-container -->
 
   <!--
     Scripts loaded in dependency order, all deferred.
