@@ -1,50 +1,98 @@
 <!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
 <html>
-    <head>
-        <meta charset="utf-8">
-        <!--
-        Customize this policy to fit your own app's needs. For more guidance, please refer to the docs:
-            https://cordova.apache.org/docs/en/latest/
-        Some notes:
-            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-                * Enable inline JS: add 'unsafe-inline' to default-src
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-        <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="css/index.css">
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>Apache Cordova Hello World!!</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://apisandbox.openbankproject.com; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>ITNPF13 Financial App</title>
+
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <a class="skip-link" href="#view-login">Skip to main content</a>
+
+    <header class="app-header" role="banner">
+        <h1>OBP Secure Banking</h1>
+        <p class="subtitle">Direct Login sandbox client</p>
+    </header>
+
+    <main id="app-root" tabindex="-1">
+        <section id="view-login" class="view is-active" aria-labelledby="login-heading">
+            <h2 id="login-heading">Sign In</h2>
+            <form id="form-login" novalidate>
+                <div class="field-group">
+                    <label for="input-username">Provider ID (username)</label>
+                    <input id="input-username" name="username" type="text" autocomplete="username" required aria-label="Provider ID username">
+                </div>
+                <div class="field-group">
+                    <label for="input-password">Password</label>
+                    <input id="input-password" name="password" type="password" autocomplete="current-password" required aria-label="Password">
+                </div>
+                <div class="field-group checkbox-group">
+                    <input id="chk-remember" name="remember" type="checkbox" aria-label="Remember username">
+                    <label for="chk-remember">Remember username on this device (encrypted)</label>
+                </div>
+                <button id="btn-login" type="submit">Sign in securely</button>
+            </form>
+            <p id="login-status" class="status-line" role="status" aria-live="polite"></p>
+            <p class="helper-text">Credentials are transmitted over TLS. Token stored in session storage only.</p>
+        </section>
+
+        <section id="view-banks" class="view" aria-labelledby="banks-heading" hidden>
+            <div class="view-header">
+                <h2 id="banks-heading">Available Banks</h2>
+                <button id="btn-to-login" type="button" class="secondary">Back</button>
             </div>
-        </div>
-        <script src="cordova.js"></script>
-        <script src="js/index.js"></script>
-    </body>
+            <label for="bank-search">Filter by name or ID</label>
+            <input id="bank-search" type="search" aria-label="Filter banks">
+            <div id="banks-table-container" role="region" aria-live="polite" aria-label="Banks list"></div>
+            <p id="banks-status" class="status-line" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="view-accounts" class="view" aria-labelledby="accounts-heading" hidden>
+            <div class="view-header">
+                <h2 id="accounts-heading">Accounts</h2>
+                <button id="btn-to-banks" type="button" class="secondary">Back</button>
+            </div>
+            <div id="accounts-table-container" role="region" aria-live="polite" aria-label="Accounts list"></div>
+            <p id="accounts-status" class="status-line" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="view-transactions" class="view" aria-labelledby="transactions-heading" hidden>
+            <div class="view-header">
+                <h2 id="transactions-heading">Transactions</h2>
+                <button id="btn-to-accounts" type="button" class="secondary">Back</button>
+            </div>
+            <fieldset id="txn-filters">
+                <legend>Transaction filters</legend>
+                <label for="txn-search">Search description</label>
+                <input id="txn-search" type="search" aria-label="Search transaction description">
+                <label for="txn-date-from">From date</label>
+                <input id="txn-date-from" type="date" aria-label="From date">
+                <label for="txn-date-to">To date</label>
+                <input id="txn-date-to" type="date" aria-label="To date">
+            </fieldset>
+            <div id="transactions-list-container" role="region" aria-live="polite" aria-label="Transactions table"></div>
+            <p id="transactions-status" class="status-line" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="view-security" class="view" aria-labelledby="security-heading" hidden>
+            <div class="view-header">
+                <h2 id="security-heading">Security &amp; Session</h2>
+                <button id="btn-logout" type="button" class="danger">Logout &amp; wipe session</button>
+            </div>
+            <p id="sec-session-info" role="status" aria-live="polite">Loading session status...</p>
+            <p class="helper-text">Only an encrypted token and optional username are stored. Password is never persisted.</p>
+        </section>
+    </main>
+
+    <footer class="app-footer" role="contentinfo">
+        <small id="global-session-status" aria-live="polite">Session: none</small>
+    </footer>
+
+    <script src="cordova.js"></script>
+    <script type="module" src="js/index.js"></script>
+</body>
 </html>
