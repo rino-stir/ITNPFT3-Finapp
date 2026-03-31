@@ -37,14 +37,14 @@
   content="
     default-src 'self';
     script-src  'self' 'unsafe-inline' 'unsafe-eval'
-                https://unpkg.com;
+                https://unpkg.com https://code.jquery.com;
     style-src   'self' 'unsafe-inline'
-                https://api.fontshare.com;
+                https://api.fontshare.com https://code.jquery.com;
     font-src    'self'
                 https://api.fontshare.com https://cdn.fontshare.com;
     connect-src 'self'
                 https://apisandbox.openbankproject.com https://unpkg.com;
-    img-src     'self' data: blob:;
+    img-src     'self' https://code.jquery.com data: blob:;
     frame-src   'none';
     object-src  'none';
     base-uri    'self';
@@ -56,6 +56,11 @@
 
   <!-- Lucide icons via CDN — lightweight SVG icon system -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+
+  <!-- jQuery + jQuery UI (presentation widgets) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
+  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js" defer></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" />
 
   <!-- CSS: tokens → base → components (via style.css @import) -->
   <link rel="stylesheet" href="./css/style.css" />
@@ -417,14 +422,16 @@
                 <div class="filter-row">
                   <div class="filter-item">
                     <label class="filter-label" for="filter-date-from">From Date</label>
-                    <input class="filter-input" type="date" id="filter-date-from" 
-                           aria-label="Transaction from date">
+                        <input class="filter-input" type="text" id="filter-date-from" 
+                          placeholder="YYYY-MM-DD" autocomplete="off"
+                          aria-label="Transaction from date">
                   </div>
 
                   <div class="filter-item">
                     <label class="filter-label" for="filter-date-to">To Date</label>
-                    <input class="filter-input" type="date" id="filter-date-to" 
-                           aria-label="Transaction to date">
+                        <input class="filter-input" type="text" id="filter-date-to" 
+                          placeholder="YYYY-MM-DD" autocomplete="off"
+                          aria-label="Transaction to date">
                   </div>
                 </div>
               </fieldset>

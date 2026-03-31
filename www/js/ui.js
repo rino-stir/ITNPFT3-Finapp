@@ -280,6 +280,7 @@ function renderAccounts(accounts, onSelect) {
 function renderTransactions(transactions) {
   const skeleton = document.getElementById('transactions-skeleton');
   const wrap     = document.getElementById('transactions-table-wrap');
+  const table    = wrap ? wrap.querySelector('table') : null;
   const tbody    = document.getElementById('transactions-body');
   const empty    = document.getElementById('transactions-empty');
 
@@ -334,7 +335,48 @@ function renderTransactions(transactions) {
       row.append(dateCell, descCell, typeCell, amountCell);
       tbody.appendChild(row);
     });
+
+    initTransactionTableUi(table, tbody);
   }
+}
+
+/**
+ * Enhance transaction table with jQuery UI presentation widgets.
+ */
+function initTransactionTableUi(table, tbody) {
+  if (!table || !tbody || !window.jQuery || !window.jQuery.ui) return;
+
+  const $ = window.jQuery;
+  const $table = $(table);
+  const $tbody = $(tbody);
+
+  $table.addClass('ui-widget ui-widget-content');
+  $table.find('thead th').addClass('ui-widget-header');
+
+  // Reinitialize selectable after each table redraw.
+  if ($tbody.data('ui-selectable')) {
+    $tbody.selectable('destroy');
+  }
+
+  $tbody.selectable({
+    filter: 'tr',
+    selected(event, ui) {
+      $(ui.selected).addClass('ui-state-highlight');
+    },
+    unselected(event, ui) {
+      $(ui.unselected).removeClass('ui-state-highlight');
+    }
+  });
+
+  // Tooltip on description cells to improve readability for long text.
+  if ($table.data('ui-tooltip')) {
+    $table.tooltip('destroy');
+  }
+
+  $table.tooltip({
+    items: '.col-desc',
+    track: true
+  });
 }
 
 /* ── Transaction Filtering ────────────────────────────────── */
@@ -401,10 +443,26 @@ function toggleAdvancedFilters() {
 function parseFilterDate(dateString) {
   if (!dateString) return null;
   // Date input format: YYYY-MM-DD
-  // Parse as UTC to avoid timezone issues
+  // Normalize to local day-start so date-only comparisons are stable.
   const parts = dateString.split('-');
   if (parts.length !== 3) return null;
-  return new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+  const parsed = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  parsed.setHours(0, 0, 0, 0);
+  return parsed;
+}
+
+/**
+ * Parse transaction datetime into a normalized date-only object.
+ */
+function parseTransactionDate(tx) {
+  const detail = tx?.details || {};
+  const rawDate = detail.completed || detail.posted || '';
+  if (!rawDate) return null;
+
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) return null;
+  parsed.setHours(0, 0, 0, 0);
+  return parsed;
 }
 
 /**
@@ -429,7 +487,7 @@ function applyTransactionFilters() {
     const value     = detail.value || {};
     const amount    = parseFloat(value.amount || 0);
     const isCredit  = amount >= 0;
-    const dateStr   = tx.date || '';
+    const txDate    = parseTransactionDate(tx);
 
     // Type filter
     if (typeFilter === 'CREDIT' && !isCredit) return false;
@@ -445,16 +503,10 @@ function applyTransactionFilters() {
     if (searchText && !desc.includes(searchText) && !txType.includes(searchText)) return false;
 
     // Date range filter
-    if (dateStr) {
-      // Parse transaction date (format: "DD Mon YYYY" or similar)
-      const txDate = new Date(dateStr);
+    if (dateFrom || dateTo) {
+      if (!txDate) return false;
       if (dateFrom && txDate < dateFrom) return false;
-      if (dateTo) {
-        // Set dateTo to end of day for inclusive range
-        const dateToEnd = new Date(dateTo);
-        dateToEnd.setDate(dateToEnd.getDate() + 1);
-        if (txDate >= dateToEnd) return false;
-      }
+      if (dateTo && txDate > dateTo) return false;
     }
 
     return true;
@@ -484,6 +536,21 @@ function resetTransactionFilters() {
   if (searchText) searchText.value = '';
   if (dateFrom) dateFrom.value = '';
   if (dateTo) dateTo.value = '';
+
+  if (window.jQuery && window.jQuery.ui) {
+    const $ = window.jQuery;
+    const $typeFilter = $('#filter-type');
+    if ($typeFilter.length && $typeFilter.data('ui-selectmenu')) {
+      $typeFilter.selectmenu('refresh');
+    }
+
+    ['#filter-date-from', '#filter-date-to'].forEach(selector => {
+      const $dateInput = $(selector);
+      if ($dateInput.length && $dateInput.hasClass('hasDatepicker')) {
+        $dateInput.datepicker('setDate', null);
+      }
+    });
+  }
 
   // Re-render with all transactions
   renderTransactions(allTransactions);
@@ -523,8 +590,47 @@ function setupTransactionFilters() {
     toggleBtn.addEventListener('click', toggleAdvancedFilters);
   }
 
+  initJqueryUiElements();
+
   // Initialize reset button visibility
   updateResetButtonVisibility();
+}
+
+/**
+ * Progressive enhancement: apply jQuery UI widgets when library is available.
+ */
+function initJqueryUiElements() {
+  if (!window.jQuery || !window.jQuery.ui) return;
+
+  const $ = window.jQuery;
+  const $typeFilter = $('#filter-type');
+  if ($typeFilter.length && !$typeFilter.data('ui-selectmenu')) {
+    $typeFilter.selectmenu({
+      change: applyTransactionFilters
+    });
+  }
+
+  ['#filter-date-from', '#filter-date-to'].forEach(selector => {
+    const $dateInput = $(selector);
+    if ($dateInput.length && !$dateInput.hasClass('hasDatepicker')) {
+      $dateInput.datepicker({
+        dateFormat: 'yy-mm-dd',
+        changeMonth: true,
+        changeYear: true,
+        onSelect: applyTransactionFilters
+      });
+    }
+  });
+
+  const $advancedToggle = $('#filter-toggle-advanced');
+  if ($advancedToggle.length && !$advancedToggle.hasClass('ui-button')) {
+    $advancedToggle.button();
+  }
+
+  const $resetButton = $('#filter-reset');
+  if ($resetButton.length && !$resetButton.hasClass('ui-button')) {
+    $resetButton.button();
+  }
 }
 
 /* -----------------------------------------------------------
