@@ -1,5 +1,5 @@
 /* =============================================================
-   UOS FinApp — ui.js
+   FT3 FinApp — ui.js
    DOM utilities: show/hide views, render cards & tables,
    toast messages, theme toggle.
    OWASP 2024 M7 (Insufficient Binary Protections / XSS):
@@ -534,18 +534,30 @@ function setupTransactionFilters() {
 (function initThemeToggle() {
   const html   = document.documentElement;
   const toggle = document.getElementById('theme-toggle');
+  const THEME_KEY = 'ui_theme';
 
-  // Detect system preference
+  // Detect saved preference, otherwise fall back to system preference.
+  let saved = null;
+  try {
+    saved = localStorage.getItem(THEME_KEY);
+  } catch {
+    saved = null;
+  }
+
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  let current = prefersDark ? 'dark' : 'light';
+  let current = saved === 'dark' || saved === 'light'
+    ? saved
+    : (prefersDark ? 'dark' : 'light');
   html.setAttribute('data-theme', current);
 
   function updateIcon() {
     if (!toggle) return;
+    const nextTheme = current === 'dark' ? 'light' : 'dark';
+    const iconName = current === 'dark' ? 'sun' : 'moon';
+
     toggle.setAttribute('aria-label', `Switch to ${current === 'dark' ? 'light' : 'dark'} mode`);
-    toggle.innerHTML = current === 'dark'
-      ? '<i data-lucide="sun" aria-hidden="true"></i>'
-      : '<i data-lucide="moon" aria-hidden="true"></i>';
+    toggle.setAttribute('title', `Switch to ${nextTheme} mode`);
+    toggle.innerHTML = `<i data-lucide="${iconName}" aria-hidden="true"></i>`;
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -553,6 +565,11 @@ function setupTransactionFilters() {
     toggle.addEventListener('click', () => {
       current = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', current);
+      try {
+        localStorage.setItem(THEME_KEY, current);
+      } catch {
+        // localStorage can fail in some private browsing contexts.
+      }
       updateIcon();
     });
   }

@@ -1,5 +1,5 @@
 /* =============================================================
-   UOS FinApp — Component Styles
+   FT3 FinApp — Component Styles
    Covers: layout shell, header, login card, view panels,
    tables, cards, buttons, badges, toasts, skeletons,
    empty states, error states, dark-mode toggle.
@@ -425,21 +425,39 @@
 
 /* Dark/light mode toggle */
 .theme-toggle {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
   border-radius: var(--radius-md);
-  color: var(--color-text-muted);
-  background: transparent;
-  border: 1px solid transparent;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
 }
 
 .theme-toggle:hover {
   background: var(--color-surface-offset);
-  border-color: var(--color-border);
+  border-color: var(--color-text-muted);
   color: var(--color-text);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.theme-toggle i,
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */

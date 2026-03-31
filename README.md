@@ -1,5 +1,5 @@
 # ITNPFT3-Finapp
-UOS OBP 
+FT3 OBP 
 
 Use nodemon to watch for changes and refresh automatically:
 1. Install Nodemon (if you don't have it)

@@ -1,5 +1,5 @@
 /* =============================================================
-   UOS FinApp — obp-api.js
+   FT3 FinApp — obp-api.js
    OBP Sandbox API client.
    OWASP 2024 M3 (Insecure Communication):
      - All requests over HTTPS only

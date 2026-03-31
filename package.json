@@ -1,7 +1,7 @@
 {
   "name": "org.apache.cordova.hellocordova",
   "displayName": "Hello Cordova",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
   "main": "index.js",
   "scripts": {

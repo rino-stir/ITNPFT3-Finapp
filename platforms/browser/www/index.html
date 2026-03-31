@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UOS FinApp</title>
+  <title>FT3 FinApp</title>
 
   <!--
     SECURITY NOTE (OWASP M3 / M9):
@@ -19,16 +19,36 @@
              connect-src 'self' https://apisandbox.openbankproject.com;
              font-src 'self' https://api.fontshare.com;
              style-src 'self' 'unsafe-inline' https://api.fontshare.com;"> -->
-<meta http-equiv="Content-Security-Policy" 
-    content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; 
-    connect-src * 'unsafe-inline'; 
-    img-src * data: blob: 'unsafe-inline'; frame-src *; 
-    style-src * 'unsafe-inline';
-    connect-src 'self' https://apisandbox.openbankproject.com;
-             font-src 'self' https://api.fontshare.com;
-             style-src 'self' 'unsafe-inline' https://api.fontshare.com;
-    ">
-
+<!-- <meta http-equiv="Content-Security-Policy" 
+        content="
+            default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; 
+            script-src * 'unsafe-inline' 'unsafe-eval'; 
+            connect-src 'self' https://apisandbox.openbankproject.com;
+            connect-src * 'unsafe-inline'; 
+            img-src * data: blob: 'unsafe-inline'; frame-src *; 
+            style-src * 'unsafe-inline';
+            font-src 'self' https://api.fontshare.com;
+            style-src 'self' 'unsafe-inline' https://api.fontshare.com;
+            font-src 'self' https://api.fontshare.com https://cdn.fontshare.com;
+            style-src 'self' 'unsafe-inline' https://api.fontshare.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com;         
+    "> -->
+<meta http-equiv="Content-Security-Policy"
+  content="
+    default-src 'self';
+    script-src  'self' 'unsafe-inline' 'unsafe-eval'
+                https://unpkg.com;
+    style-src   'self' 'unsafe-inline'
+                https://api.fontshare.com;
+    font-src    'self'
+                https://api.fontshare.com https://cdn.fontshare.com;
+    connect-src 'self'
+                https://apisandbox.openbankproject.com;
+    img-src     'self' data: blob:;
+    frame-src   'none';
+    object-src  'none';
+    base-uri    'self';
+  ">
   <!-- Fonts: Fontshare (General Sans display + Satoshi body) -->
   <link
     href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=satoshi@400,500,600&display=swap"
@@ -58,9 +78,9 @@
     <!-- Header: sticky at top, z-100 -->
     <header class="app-header" role="banner">
       <!-- Brand -->
-      <div class="app-header__brand" aria-label="UOS FinApp home">
+      <div class="app-header__brand" aria-label="FT3 FinApp home">
         <!-- Inline SVG logo: geometric shield + currency mark -->
-        <svg class="app-header__logo" aria-label="UOS FinApp logo"
+        <svg class="app-header__logo" aria-label="FT3 FinApp logo"
              viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M16 3L4 8v7c0 6.6 5.1 12.8 12 14.3C23 27.8 28 21.6 28 15V8L16 3z"
                 fill="currentColor" fill-opacity="0.12" stroke="currentColor"
@@ -70,7 +90,7 @@
           <path d="M16 10.5V12M16 21v1.5M13 13.5l-1-1M20 13.5l1-1"
                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <span class="app-header__wordmark">UOS FinApp</span>
+        <span class="app-header__wordmark">FT3 FinApp</span>
       </div>
 
       <!-- Right controls -->
@@ -112,7 +132,7 @@
 
         <!-- Menu actions -->
         <nav class="user-menu-actions">
-          <button class="user-menu-item" id="user-menu-logout" aria-label="Sign out of UOS FinApp">
+          <button class="user-menu-item" id="user-menu-logout" aria-label="Sign out of FT3 FinApp">
             <i data-lucide="log-out" aria-hidden="true"></i>
             <span>Sign out</span>
           </button>
@@ -131,7 +151,7 @@
 
           <div class="login-card">
             <div class="login-card__header">
-              <h1 class="login-card__title" id="login-title">UOS FinApp</h1>
+              <h1 class="login-card__title" id="login-title">FT3 FinApp</h1>
               <p class="login-card__subtitle">
                 Sign in to access your bank accounts.
               </p>
@@ -188,7 +208,7 @@
 
               <!-- Submit -->
               <button class="btn btn-primary btn-full" type="submit"
-                      id="btn-login" aria-label="Sign in to UOS FinApp">
+                      id="btn-login" aria-label="Sign in to FT3 FinApp">
                 <i data-lucide="shield-check" aria-hidden="true"></i>
                 Sign in securely
               </button>
@@ -471,7 +491,7 @@
           <p class="footer-label">About</p>
           <p class="footer-meta">
             OBP API v<span id="footer-api-version">6.0.0</span> | 
-            UOS FinApp v<span id="footer-app-version">1.2.2</span>
+            FT3 FinApp v<span id="footer-app-version">1.0</span>
           </p>
         </div>
       </div>

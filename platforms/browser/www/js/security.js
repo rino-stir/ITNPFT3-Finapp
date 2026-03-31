@@ -1,5 +1,5 @@
 /* =============================================================
-   UOS FinApp — security.js
+   FT3 FinApp — security.js
    Session lifecycle: store, retrieve, clear token.
    OWASP 2024 M1 (Improper Credential Usage):
      - Token in sessionStorage only (auto-wiped on tab close)

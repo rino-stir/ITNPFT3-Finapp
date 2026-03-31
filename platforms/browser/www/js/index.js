@@ -1,5 +1,5 @@
 /* =============================================================
-   UOS FinApp — index.js
+   FT3 FinApp — index.js
    Main application controller.
    Wires: login form → auth → banks → accounts → transactions.
    BUG FIXES in this version:
