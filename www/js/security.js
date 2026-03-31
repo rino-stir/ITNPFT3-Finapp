@@ -85,3 +85,84 @@ function clearSession() {
    but this catches edge cases (e.g. bfcache rehydration).
    ----------------------------------------------------------- */
 window.addEventListener('beforeunload', clearSession);
+
+/* ── Bank Preference Persistence (localStorage) ───────────────── */
+/* Non-sensitive bank selection is stored in localStorage so the app
+   can skip the bank selection step on repeated visits. This is 
+   separate from token storage (which stays sessionStorage only). */
+
+const BANK_PREF_PREFIX = 'obp_last_bank_';
+
+/* -----------------------------------------------------------
+   Store last selected bank to localStorage
+   @param {string} bankId — normalized bank id
+   @param {Object} bankData — bank object with id, short_name, etc
+   @param {string} username — for user-scoped preference isolation
+   ----------------------------------------------------------- */
+function storeRememberedBank(bankId, bankData, username) {
+  if (!bankId || !username) return;
+  try {
+    const key = BANK_PREF_PREFIX + username;
+    const payload = {
+      id: bankId,
+      shortName: bankData?.short_name || bankData?.short_name || bankId,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+  } catch (err) {
+    console.warn('[Security] storeRememberedBank error:', err.message);
+  }
+}
+
+/* -----------------------------------------------------------
+   Retrieve last selected bank from localStorage
+   @param {string} username — for user-scoped preference retrieval
+   @returns {Object|null} — { id, shortName, timestamp } or null
+   ----------------------------------------------------------- */
+function getRememberedBank(username) {
+  if (!username) return null;
+  try {
+    const key = BANK_PREF_PREFIX + username;
+    const stored = localStorage.getItem(key);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (parsed?.id && typeof parsed.id === 'string') {
+      return parsed;
+    }
+    return null;
+  } catch (err) {
+    console.warn('[Security] getRememberedBank error:', err.message);
+    return null;
+  }
+}
+
+/* -----------------------------------------------------------
+   Validate remembered bank against current accessible banks
+   @param {string} bankId — remembered bank id to validate
+   @param {Array} availableBanks — current list of accessible banks
+   @returns {Object|null} — full bank object if valid, null if stale
+   ----------------------------------------------------------- */
+function validateRememberedBank(bankId, availableBanks) {
+  if (!bankId || !Array.isArray(availableBanks) || availableBanks.length === 0) {
+    return null;
+  }
+  const found = availableBanks.find(bank => {
+    const normalizedBankId = bank.id || bank.bank_id;
+    return String(normalizedBankId) === String(bankId);
+  });
+  return found || null;
+}
+
+/* -----------------------------------------------------------
+   Clear remembered bank preference (e.g. on explicit account removal)
+   @param {string} username — for user-scoped preference removal
+   ----------------------------------------------------------- */
+function clearRememberedBank(username) {
+  if (!username) return;
+  try {
+    const key = BANK_PREF_PREFIX + username;
+    localStorage.removeItem(key);
+  } catch (err) {
+    console.warn('[Security] clearRememberedBank error:', err.message);
+  }
+}
