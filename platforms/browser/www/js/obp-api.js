@@ -194,6 +194,23 @@ async function obpGetAccounts() {
 }
 
 /* -----------------------------------------------------------
+   Fetch account details including balance
+   @param {string} bankId
+   @param {string} accountId
+   @returns {Promise<{account: Object|null, error: string|null}>}
+   ----------------------------------------------------------- */
+async function obpGetAccountDetails(bankId, accountId) {
+  if (!bankId || !accountId) {
+    return { account: null, error: 'Account details are missing.' };
+  }
+
+  const path = `/my/banks/${encodeURIComponent(bankId)}/accounts/${encodeURIComponent(accountId)}/account`;
+  const { data, error } = await apiFetch(path);
+  if (error) return { account: null, error };
+  return { account: data || null, error: null };
+}
+
+/* -----------------------------------------------------------
    Fetch transactions for a specific account at a bank
    @param {string} bankId
    @param {string} accountId

@@ -710,6 +710,30 @@
   margin-top: var(--space-1);
 }
 
+.account-info {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.account-info__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.account-info__label {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.account-info__value {
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Breadcrumb trail */
 .breadcrumb {
   display: flex;

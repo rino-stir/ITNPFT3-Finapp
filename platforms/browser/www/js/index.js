@@ -353,6 +353,12 @@ async function loadTransactions(bankId, accountId) {
   showView('view-transactions');
   setLoading(true, 'Loading transactions…');
 
+  // Fetch account details (type + balance)
+  const { account: accountDetails } = await obpGetAccountDetails(bankId, accountId);
+  if (accountDetails) {
+    populateAccountInfo(accountDetails);
+  }
+
   const { transactions, error } = await obpGetTransactions(bankId, accountId);
   setLoading(false);
 
@@ -375,6 +381,23 @@ async function loadTransactions(bankId, accountId) {
   
   // Setup filter event listeners (one-time on first load to transactions view)
   setupTransactionFilters();
+}
+
+/* ── Account Info Display ───────────────────────────────────── */
+
+function populateAccountInfo(account) {
+  const typeDisplay = document.getElementById('account-type-display');
+  const balanceDisplay = document.getElementById('account-balance-display');
+
+  if (typeDisplay) {
+    typeDisplay.textContent = account.account_type || account.product_code || '—';
+  }
+
+  if (balanceDisplay && account.balance) {
+    const currency = account.balance.currency || '';
+    const amount = account.balance.amount || '0';
+    balanceDisplay.textContent = `${currency} ${Number(amount).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`;
+  }
 }
 
 /* ── Sign out ───────────────────────────────────────────────── */
