@@ -234,6 +234,9 @@ async function handleLogin(e) {
   storeSession(token, username);
   populateUserDisplay({ display_name: username });
   
+  // Store username globally for bank preference persistence
+  window.currentUsername = username;
+  
   // Start 30-minute session timer
   startSessionTimer(1800);
 
@@ -270,6 +273,20 @@ async function loadBanks() {
   state.allAccounts = [];
 
   renderBanks(banks, handleBankSelect);
+
+  // Try to restore remembered bank and auto-open accounts if valid
+  const remembered = getRememberedBank(window.currentUsername);
+  if (remembered) {
+    const matchedBank = validateRememberedBank(remembered.id, banks);
+    if (matchedBank) {
+      // Valid remembered bank exists in current accessible banks — auto-open
+      // Delay slightly to ensure renderBanks DOM updates are complete
+      setTimeout(() => handleBankSelect(matchedBank), 50);
+    } else {
+      // Remembered bank is no longer accessible — clear stale preference
+      clearRememberedBank(window.currentUsername);
+    }
+  }
 }
 
 /* ── Bank selected ──────────────────────────────────────────── */
@@ -277,6 +294,11 @@ async function loadBanks() {
 function handleBankSelect(bank) {
   state.selectedBank = bank;
   const selectedBankId = normalizeBankId(bank);
+
+  // Remember this bank preference (non-sensitive user preference)
+  if (window.currentUsername) {
+    storeRememberedBank(selectedBankId, bank, window.currentUsername);
+  }
 
   // Update breadcrumb label
   const bcName = document.getElementById('bc-bank-name');
@@ -418,6 +440,9 @@ function handleSignOut() {
   // Close user menu if open
   const panel = document.getElementById('user-menu-panel');
   if (panel) panel.classList.remove('is-open');
+  
+  // Clear username context (keep remembered bank per selected policy)
+  window.currentUsername = null;
   
   showView('view-login');
 }
