@@ -1,111 +1,493 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://apisandbox.openbankproject.com; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>ITNPF13 Financial App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UOS FinApp</title>
 
-    <link rel="stylesheet" href="css/index.css">
+  <!--
+    SECURITY NOTE (OWASP M3 / M9):
+    CSP is intentionally permissive for local dev (file:// + vscode live server).
+    In production, tighten to:
+      default-src 'self';
+      connect-src https://apisandbox.openbankproject.com;
+      style-src 'self' https://api.fontshare.com;
+      script-src 'self';
+  -->
+  <!-- <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;
+             connect-src 'self' https://apisandbox.openbankproject.com;
+             font-src 'self' https://api.fontshare.com;
+             style-src 'self' 'unsafe-inline' https://api.fontshare.com;"> -->
+<meta http-equiv="Content-Security-Policy" 
+    content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; 
+    connect-src * 'unsafe-inline'; 
+    img-src * data: blob: 'unsafe-inline'; frame-src *; 
+    style-src * 'unsafe-inline';
+    connect-src 'self' https://apisandbox.openbankproject.com;
+             font-src 'self' https://api.fontshare.com;
+             style-src 'self' 'unsafe-inline' https://api.fontshare.com;
+    ">
+
+  <!-- Fonts: Fontshare (General Sans display + Satoshi body) -->
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=satoshi@400,500,600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Lucide icons via CDN — lightweight SVG icon system -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+
+  <!-- CSS: tokens → base → components (via style.css @import) -->
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
-<body>
-    <a class="skip-link" href="#view-login">Skip to main content</a>
 
+<body>
+  <!-- Skip link for keyboard users — WCAG 2.4.1 -->
+  <a href="#main-content" class="sr-only">Skip to main content</a>
+
+  <!-- Loading overlay — shown during API calls -->
+  <div class="loading-overlay" id="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <span class="loading-overlay__label" id="loading-label">Loading…</span>
+  </div>
+
+  <!-- ── App Container ─────────────────────────────────────── -->
+  <!-- Professional layout: header (sticky top) + main (flex 1) + footer (sticky bottom) -->
+  <div class="app-container">
+
+    <!-- Header: sticky at top, z-100 -->
     <header class="app-header" role="banner">
-        <h1>OBP Secure Banking</h1>
-        <p class="subtitle">Direct Login sandbox client</p>
+      <!-- Brand -->
+      <div class="app-header__brand" aria-label="UOS FinApp home">
+        <!-- Inline SVG logo: geometric shield + currency mark -->
+        <svg class="app-header__logo" aria-label="UOS FinApp logo"
+             viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 3L4 8v7c0 6.6 5.1 12.8 12 14.3C23 27.8 28 21.6 28 15V8L16 3z"
+                fill="currentColor" fill-opacity="0.12" stroke="currentColor"
+                stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M11.5 16.5c0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5S18.5 12 16 12s-4.5 2-4.5 4.5z"
+                stroke="currentColor" stroke-width="1.5"/>
+          <path d="M16 10.5V12M16 21v1.5M13 13.5l-1-1M20 13.5l1-1"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="app-header__wordmark">UOS FinApp</span>
+      </div>
+
+      <!-- Right controls -->
+      <div class="app-header__controls">
+        <!-- User menu trigger button (replaces direct sign-out) -->
+        <!-- Shown after login, hidden initially -->
+        <button class="user-menu-toggle hidden" id="user-menu-trigger"
+                aria-label="Open user menu" aria-expanded="false">
+          <div class="user-avatar-small" id="user-avatar-small" aria-hidden="true">U</div>
+          <span class="user-name-display" id="user-name-display">User</span>
+        </button>
+
+        <!-- Dark/light mode toggle -->
+        <button class="theme-toggle" id="theme-toggle"
+                aria-label="Switch to dark mode" data-theme-toggle>
+          <!-- Icon injected by JS -->
+          <i data-lucide="moon" aria-hidden="true"></i>
+        </button>
+      </div>
     </header>
 
-    <main id="app-root" tabindex="-1">
-        <section id="view-login" class="view is-active" aria-labelledby="login-heading">
-            <h2 id="login-heading">Sign In</h2>
-            <form id="form-login" novalidate>
-                <div class="field-group">
-                    <label for="input-username">Provider ID (username)</label>
-                    <input id="input-username" name="username" type="text" autocomplete="username" required aria-label="Provider ID username">
-                </div>
-                <div class="field-group">
-                    <label for="input-password">Password</label>
-                    <input id="input-password" name="password" type="password" autocomplete="current-password" required aria-label="Password">
-                </div>
-                <div class="field-group checkbox-group">
-                    <input id="chk-remember" name="remember" type="checkbox" aria-label="Remember username">
-                    <label for="chk-remember">Remember username on this device (encrypted)</label>
-                </div>
-                <button id="btn-login" type="submit">Sign in securely</button>
+    <!-- ── User Menu Panel (Side Slide-Out) ──────────────── -->
+    <!-- Fixed position, slides in from left on authenticated views -->
+    <aside class="user-menu-panel" id="user-menu-panel" role="navigation" aria-label="User menu">
+      <div class="user-menu-header">
+        <h2 class="user-menu-title">Account</h2>
+        <button class="user-menu-close" id="user-menu-close" aria-label="Close user menu">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="user-menu-content">
+        <!-- User profile card -->
+        <div class="user-profile-card">
+          <div class="user-avatar-large" id="user-avatar-large" aria-hidden="true">U</div>
+          <p class="user-profile-name" id="user-profile-name" style="margin-top: var(--space-3);">User</p>
+          <p class="user-profile-email" id="user-profile-email" style="margin-top: var(--space-1);">—</p>
+        </div>
+
+        <!-- Menu actions -->
+        <nav class="user-menu-actions">
+          <button class="user-menu-item" id="user-menu-logout" aria-label="Sign out of UOS FinApp">
+            <i data-lucide="log-out" aria-hidden="true"></i>
+            <span>Sign out</span>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- ── Main content area ──────────────────────────────── -->
+    <!-- Flex 1 to fill space between header and footer; scrolls independently -->
+    <main class="app-main" id="main-content">
+      <div class="container">
+
+        <!-- ── LOGIN VIEW ──────────────────────────────────── -->
+        <section class="login-view view is-active" id="view-login"
+                 aria-labelledby="login-title">
+
+          <div class="login-card">
+            <div class="login-card__header">
+              <h1 class="login-card__title" id="login-title">UOS FinApp</h1>
+              <p class="login-card__subtitle">
+                Sign in to access your bank accounts.
+              </p>
+            </div>
+
+            <!-- Login error alert — shown on failed auth -->
+            <div class="alert alert-error" id="login-error" role="alert" aria-live="assertive">
+              <svg class="alert__icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 6v5M10 14h.01" stroke="currentColor"
+                      stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="alert__message" id="login-error-msg">
+                Something went wrong.
+              </span>
+            </div>
+
+            <form id="form-login" novalidate autocomplete="on">
+              <!-- Username -->
+              <div class="form-group">
+                <label class="form-label" for="input-username">Username</label>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="input-username"
+                  name="username"
+                  placeholder="Your OBP sandbox username"
+                  autocomplete="username"
+                  required
+                  aria-required="true"
+                  aria-describedby="err-username" />
+                <span class="form-error" id="err-username" role="alert">
+                  Please enter your username.
+                </span>
+              </div>
+
+              <!-- Password -->
+              <div class="form-group">
+                <label class="form-label" for="input-password">Password</label>
+                <input
+                  class="form-input"
+                  type="password"
+                  id="input-password"
+                  name="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  required
+                  aria-required="true"
+                  aria-describedby="err-password" />
+                <span class="form-error" id="err-password" role="alert">
+                  Please enter your password.
+                </span>
+              </div>
+
+              <!-- Submit -->
+              <button class="btn btn-primary btn-full" type="submit"
+                      id="btn-login" aria-label="Sign in to UOS FinApp">
+                <i data-lucide="shield-check" aria-hidden="true"></i>
+                Sign in securely
+              </button>
             </form>
-            <p id="login-status" class="status-line" role="status" aria-live="polite"></p>
-            <p class="helper-text">Credentials are transmitted over TLS. Token stored in session storage only.</p>
+
+            <!-- Security reassurance (visible UX — OWASP requirement) -->
+            <p style="margin-top: var(--space-4); font-size: var(--text-xs);
+                      color: var(--color-text-faint); text-align: center;">
+              Your credentials are never stored. Session ends when you close the tab.
+            </p>
+          </div>
         </section>
 
-        <section id="view-banks" class="view" aria-labelledby="banks-heading" hidden>
-            <div class="view-header">
-                <h2 id="banks-heading">Available Banks</h2>
-                <button id="btn-to-login" type="button" class="secondary">Back</button>
+        <!-- ── BANKS VIEW ───────────────────────────────────── -->
+        <section class="view hidden" id="view-banks"
+                 aria-labelledby="banks-title">
+
+          <div class="section-header">
+            <div>
+              <h2 class="section-title" id="banks-title">Your Banks</h2>
+              <p class="section-subtitle">Select a bank to view your accounts.</p>
             </div>
-            <label for="bank-search">Filter by name or ID</label>
-            <input id="bank-search" type="search" aria-label="Filter banks">
-            <div id="banks-table-container" role="region" aria-live="polite" aria-label="Banks list"></div>
-            <p id="banks-status" class="status-line" role="status" aria-live="polite"></p>
+          </div>
+
+          <!-- Skeleton shown while loading -->
+          <div class="card-grid" id="banks-skeleton" aria-hidden="true">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+
+          <!-- Banks grid — populated by JS -->
+          <div class="card-grid hidden" id="banks-list"
+               role="list" aria-label="Available banks"></div>
+
+          <!-- Empty state -->
+          <div class="empty-state hidden" id="banks-empty">
+            <svg class="empty-state__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <rect x="6" y="14" width="36" height="26" rx="3"
+                    stroke="currentColor" stroke-width="2"/>
+              <path d="M6 22h36M16 8l8 6 8-6"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="empty-state__title">No banks found</p>
+            <p class="empty-state__body">
+              Your sandbox account has no linked banks yet. 
+              Check your OBP sandbox setup.
+            </p>
+          </div>
         </section>
 
-        <section id="view-accounts" class="view" aria-labelledby="accounts-heading" hidden>
-            <div class="view-header">
-                <h2 id="accounts-heading">Accounts</h2>
-                <button id="btn-to-banks" type="button" class="secondary">Back</button>
+        <!-- ── ACCOUNTS VIEW ────────────────────────────────── -->
+        <section class="view hidden" id="view-accounts"
+                 aria-labelledby="accounts-title">
+
+          <!-- Breadcrumb -->
+          <nav class="breadcrumb" aria-label="Navigation path">
+            <button class="breadcrumb__link" id="bc-banks"
+                    aria-label="Go back to banks list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Your Banks</span>
+            </button>
+            <span class="breadcrumb__sep" aria-hidden="true">›</span>
+            <span class="breadcrumb__current" id="bc-bank-name">Bank</span>
+          </nav>
+
+          <div class="section-header">
+            <div>
+              <h2 class="section-title" id="accounts-title">Accounts</h2>
+              <p class="section-subtitle" id="accounts-bank-label">
+                Accounts at this bank.
+              </p>
             </div>
-            <div id="accounts-table-container" role="region" aria-live="polite" aria-label="Accounts list"></div>
-            <p id="accounts-status" class="status-line" role="status" aria-live="polite"></p>
+          </div>
+
+          <!-- Skeleton -->
+          <div class="card-grid" id="accounts-skeleton" aria-hidden="true">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+
+          <!-- Accounts grid — populated by JS -->
+          <div class="card-grid hidden" id="accounts-list"
+               role="list" aria-label="Your accounts"></div>
+
+          <!-- Empty state -->
+          <div class="empty-state hidden" id="accounts-empty">
+            <svg class="empty-state__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="2"/>
+              <path d="M24 16v8l5 3" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="empty-state__title">No accounts here</p>
+            <p class="empty-state__body">
+              This bank has no accounts linked to your profile.
+            </p>
+          </div>
         </section>
 
-        <section id="view-transactions" class="view" aria-labelledby="transactions-heading" hidden>
-            <div class="view-header">
-                <h2 id="transactions-heading">Transactions</h2>
-                <button id="btn-to-accounts" type="button" class="secondary">Back</button>
+        <!-- ── TRANSACTIONS VIEW ────────────────────────────── -->
+        <section class="view hidden" id="view-transactions"
+                 aria-labelledby="transactions-title">
+
+          <!-- Breadcrumb -->
+          <nav class="breadcrumb" aria-label="Navigation path">
+            <button class="breadcrumb__link" id="bc-banks-2"
+                    aria-label="Go back to banks list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Your Banks</span>
+            </button>
+            <span class="breadcrumb__sep" aria-hidden="true">›</span>
+            <button class="breadcrumb__link" id="bc-accounts"
+                    aria-label="Go back to accounts list">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Accounts</span>
+            </button>
+            <span class="breadcrumb__sep" aria-hidden="true">›</span>
+            <span class="breadcrumb__current" id="bc-account-name">Account</span>
+          </nav>
+
+          <div class="section-header">
+            <div>
+              <h2 class="section-title" id="transactions-title">Recent Transactions</h2>
+              <p class="section-subtitle" id="transactions-account-label">
+                Last 50 transactions.
+              </p>
+              <!-- Account info: type and balance -->
+              <div class="account-info">
+                <div class="account-info__item">
+                  <span class="account-info__label">Account Type:</span>
+                  <span class="account-info__value" id="account-type-display">—</span>
+                </div>
+                <div class="account-info__item">
+                  <span class="account-info__label">Balance:</span>
+                  <span class="account-info__value" id="account-balance-display">—</span>
+                </div>
+              </div>
             </div>
-            <fieldset id="txn-filters">
-                <legend>Transaction filters</legend>
-                <label for="txn-search">Search description</label>
-                <input id="txn-search" type="search" aria-label="Search transaction description">
-                <label for="txn-date-from">From date</label>
-                <input id="txn-date-from" type="date" aria-label="From date">
-                <label for="txn-date-to">To date</label>
-                <input id="txn-date-to" type="date" aria-label="To date">
-            </fieldset>
-            <div id="transactions-list-container" role="region" aria-live="polite" aria-label="Transactions table"></div>
-            <p id="transactions-status" class="status-line" role="status" aria-live="polite"></p>
+          </div>
+
+          <!-- Transaction Filters -->
+          <div class="transaction-filters" id="transaction-filters">
+            <!-- Quick Filter Bar -->
+            <div class="filter-section filter-quick">
+              <fieldset class="filter-group">
+                <div class="filter-header">
+                  <h3 class="filter-title">Quick Filter</h3>
+                  <div class="filter-header-actions">
+                    <!-- Reset button (shows only when filters applied) -->
+                    <button class="filter-reset-btn hidden" id="filter-reset" type="button" 
+                            aria-label="Clear all filters">
+                      <i data-lucide="x" aria-hidden="true"></i>
+                      <span>Reset</span>
+                    </button>
+                    <!-- Advanced toggle -->
+                    <button class="filter-toggle" id="filter-toggle-advanced" 
+                            type="button" aria-label="Toggle advanced filters"
+                            aria-expanded="false" aria-controls="filter-advanced-section">
+                      <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+                      <span>Advanced</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="filter-row-quick">
+                  <!-- Type filter -->
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-type">Type</label>
+                    <select class="filter-select" id="filter-type" aria-label="Filter by transaction type">
+                      <option value="all">All Types</option>
+                      <option value="DEBIT">Debits</option>
+                      <option value="CREDIT">Credits</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            <!-- Advanced Filter Section (Collapsible) -->
+            <div class="filter-section filter-advanced hidden" id="filter-advanced-section">
+              <fieldset class="filter-group">
+                <legend class="filter-legend">Advanced Filters</legend>
+
+                <!-- Amount Range Row -->
+                <div class="filter-row">
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-amount-min">Min Amount</label>
+                    <input class="filter-input" type="number" id="filter-amount-min" 
+                           placeholder="0" min="0" step="0.01" aria-label="Minimum transaction amount">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-amount-max">Max Amount</label>
+                    <input class="filter-input" type="number" id="filter-amount-max" 
+                           placeholder="∞" min="0" step="0.01" aria-label="Maximum transaction amount">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-search">Search Description</label>
+                    <input class="filter-input" type="text" id="filter-search" 
+                           placeholder="Search..." aria-label="Search transaction description">
+                  </div>
+                </div>
+
+                <!-- Date Range Row -->
+                <div class="filter-row">
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-date-from">From Date</label>
+                    <input class="filter-input" type="date" id="filter-date-from" 
+                           aria-label="Transaction from date">
+                  </div>
+
+                  <div class="filter-item">
+                    <label class="filter-label" for="filter-date-to">To Date</label>
+                    <input class="filter-input" type="date" id="filter-date-to" 
+                           aria-label="Transaction to date">
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <!-- Skeleton rows -->
+          <div id="transactions-skeleton" aria-hidden="true">
+            <div class="skeleton skeleton-text" style="height:44px; margin-bottom: var(--space-2);"></div>
+            <div class="skeleton skeleton-text" style="height:44px; margin-bottom: var(--space-2);"></div>
+            <div class="skeleton skeleton-text" style="height:44px;"></div>
+          </div>
+
+          <!-- Transactions table — populated by JS -->
+          <div class="table-wrapper hidden" id="transactions-table-wrap">
+            <table class="data-table" aria-label="Transaction history">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Type</th>
+                  <th scope="col" class="col-amount">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-body"></tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty-state hidden" id="transactions-empty">
+            <svg class="empty-state__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M10 14h28M10 24h20M10 34h14"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="empty-state__title">No transactions yet</p>
+            <p class="empty-state__body">
+              This account has no transaction history available.
+            </p>
+          </div>
         </section>
 
-        <section id="view-security" class="view" aria-labelledby="security-heading" hidden>
-            <div class="view-header">
-                <h2 id="security-heading">Security &amp; Session</h2>
-                <button id="btn-to-about" type="button" class="secondary">About</button>
-                <button id="btn-logout" type="button" class="danger">Logout &amp; wipe session</button>
-            </div>
-            <p id="sec-session-info" role="status" aria-live="polite">Loading session status...</p>
-            <p class="helper-text">Only an encrypted token and optional username are stored. Password is never persisted.</p>
-        </section>
-
-        <section id="view-about" class="view" aria-labelledby="about-heading" hidden>
-            <div class="view-header">
-                <h2 id="about-heading">About</h2>
-                <button id="btn-about-back" type="button" class="secondary">Back</button>
-            </div>
-            <p><strong>Developer:</strong> Rinold Sagayaraj</p>
-            <p><strong>Student ID:</strong> 3079158</p>
-            <p><strong>API provider:</strong> <a href="https://apisandbox.openbankproject.com" target="_blank" rel="noopener noreferrer">https://apisandbox.openbankproject.com</a></p>
-            <p><strong>App version:</strong> <span id="about-app-version"></span></p>
-        </section>
+      </div><!-- /.container -->
     </main>
 
-    <footer class="app-footer" role="contentinfo">
-        <small id="global-session-status" aria-live="polite">Session: none</small>
-        <small id="app-footer-info" class="footer-note" aria-live="polite"></small>
+    <!-- ── Footer (Sticky Bottom) ────────────────────────── -->
+    <!-- Session info + countdown timer + API version credits -->
+    <!-- Hidden on login view, visible on authenticated views -->
+    <footer class="app-footer" id="app-footer" role="contentinfo">
+      <div class="footer-content">
+        <!-- Session info section -->
+        <div class="footer-section">
+          <p class="footer-label">Session Info</p>
+          <div class="session-info">
+            <span id="session-user">Logged in as: —</span>
+            <span id="session-timer" class="session-timer" aria-label="Session timeout countdown">00:00</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="footer-divider"></div>
+
+        <!-- API/App version section -->
+        <div class="footer-section">
+          <p class="footer-label">About</p>
+          <p class="footer-meta">
+            OBP API v<span id="footer-api-version">6.0.0</span> | 
+            UOS FinApp v<span id="footer-app-version">1.0</span>
+          </p>
+        </div>
+      </div>
     </footer>
 
-    <script src="cordova.js"></script>
-    <script type="module" src="js/index.js"></script>
+  </div><!-- /.app-container -->
+
+  <!--
+    Scripts loaded in dependency order, all deferred.
+    type="module" gives ES module scoping — prevents global namespace pollution.
+    OWASP M7: no inline event handlers anywhere in HTML.
+  -->
+  <script src="./js/config.js"   defer></script>
+  <script src="./js/security.js" defer></script>
+  <script src="./js/obp-api.js"  defer></script>
+  <script src="./js/ui.js"       defer></script>
+  <script src="./js/index.js"    defer></script>
 </body>
 </html>
